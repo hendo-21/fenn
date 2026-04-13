@@ -58,9 +58,7 @@ def build_parser() -> argparse.ArgumentParser:
     p_dash.add_argument(
         "--host", default="127.0.0.1", help="Host to bind (default: 127.0.0.1)"
     )
-    p_dash.add_argument(
-        "--debug", action="store_true", help="Run Flask in debug mode"
-    )
+    p_dash.add_argument("--debug", action="store_true", help="Run Flask in debug mode")
     p_dash.set_defaults(func=dashboard.execute)
 
     return parser

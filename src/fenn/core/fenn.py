@@ -105,7 +105,6 @@ class Fenn:
     def config_file(self) -> str:
         return self._config_file
 
-
     @property
     def export_dir(self) -> Path:
         return self._exporter.export_dir

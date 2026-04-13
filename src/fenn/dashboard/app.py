@@ -26,6 +26,7 @@ scanner = FennScanner()
 # Template filters
 # --------------------------------------------------------------------------- #
 
+
 @app.template_filter("duration")
 def duration_filter(seconds):
     return scanner.format_duration(seconds)
@@ -44,6 +45,7 @@ def short_id_filter(session_id: str) -> str:
 # --------------------------------------------------------------------------- #
 # Routes
 # --------------------------------------------------------------------------- #
+
 
 @app.route("/")
 def index():
@@ -86,8 +88,10 @@ def not_found(e):
 # Public API (used by CLI)
 # --------------------------------------------------------------------------- #
 
-def run(host: str = "127.0.0.1", port: int = 5000, debug: bool = False,
-        log_dirs=None) -> None:
+
+def run(
+    host: str = "127.0.0.1", port: int = 5000, debug: bool = False, log_dirs=None
+) -> None:
     """Configure and start the dashboard server."""
     if log_dirs:
         scanner.add_dirs(log_dirs)
@@ -95,6 +99,7 @@ def run(host: str = "127.0.0.1", port: int = 5000, debug: bool = False,
     app.logger.setLevel(logging.ERROR)
     print(f"Fenn dashboard started at http://{host}:{port}")
     from werkzeug.serving import make_server
+
     make_server(host, port, app).serve_forever()
 
 
@@ -102,13 +107,18 @@ def run(host: str = "127.0.0.1", port: int = 5000, debug: bool = False,
 # Standalone entry point
 # --------------------------------------------------------------------------- #
 
+
 def main():
     parser = argparse.ArgumentParser(
         prog="fenn-dashboard",
         description="Fenn Dashboard — browse fnxml log files in your browser",
     )
-    parser.add_argument("--log-dir", nargs="+", metavar="DIR",
-                        help="Extra directories to scan for .fn files")
+    parser.add_argument(
+        "--log-dir",
+        nargs="+",
+        metavar="DIR",
+        help="Extra directories to scan for .fn files",
+    )
     parser.add_argument("--port", type=int, default=5000)
     parser.add_argument("--host", default="127.0.0.1")
     parser.add_argument("--debug", action="store_true")

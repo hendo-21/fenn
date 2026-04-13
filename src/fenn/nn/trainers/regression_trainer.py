@@ -22,11 +22,11 @@ from .trainer import Trainer
 
 class RegressionTrainer(Trainer):
     """A trainer for regression tasks with PyTorch models.
-    
+
     Extends the base :class:`Trainer` with regression-specific metrics (R² score,
     MSE) and continuous-value prediction logic. Handles single-target regression
     with optional validation and early stopping.
-    
+
     Args:
         model: The neural network model, expected to output continuous predictions.
         loss_fn: Loss function suitable for regression (e.g. MSELoss, HuberLoss).

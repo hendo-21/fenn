@@ -150,7 +150,9 @@ class ModelPrettyPrinter:
         if not extra_repr:
             return ""
 
-        collapsed = " ".join(part.strip() for part in extra_repr.splitlines() if part.strip())
+        collapsed = " ".join(
+            part.strip() for part in extra_repr.splitlines() if part.strip()
+        )
         if len(collapsed) <= 90:
             return collapsed
 

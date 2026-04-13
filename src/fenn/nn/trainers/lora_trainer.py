@@ -29,7 +29,13 @@ except ImportError:
     LoraConfig = None  # type: ignore
     TaskType = None  # type: ignore
 
-_SUPPORTED_TASK_TYPES = {"SEQ_CLS", "CAUSAL_LM", "SEQ_2_SEQ_LM", "TOKEN_CLS", "QUESTION_ANS"}
+_SUPPORTED_TASK_TYPES = {
+    "SEQ_CLS",
+    "CAUSAL_LM",
+    "SEQ_2_SEQ_LM",
+    "TOKEN_CLS",
+    "QUESTION_ANS",
+}
 _GENERATIVE_TASK_TYPES = {"CAUSAL_LM", "SEQ_2_SEQ_LM"}
 
 
@@ -111,8 +117,12 @@ class LoRATrainer(Trainer):
         # Filter optim.defaults to valid constructor args only — PyTorch adds internal
         # keys (e.g. decoupled_weight_decay) that are not accepted by __init__.
         optimizer_class = type(optim)
-        valid_init_params = set(inspect.signature(optimizer_class.__init__).parameters) - {"self", "params"}
-        optimizer_defaults = {k: v for k, v in optim.defaults.items() if k in valid_init_params}
+        valid_init_params = set(
+            inspect.signature(optimizer_class.__init__).parameters
+        ) - {"self", "params"}
+        optimizer_defaults = {
+            k: v for k, v in optim.defaults.items() if k in valid_init_params
+        }
         trainable_params = [p for p in model.parameters() if p.requires_grad]
         optim = optimizer_class(trainable_params, **optimizer_defaults)
 
@@ -137,7 +147,9 @@ class LoRATrainer(Trainer):
     # Internal helpers
     # ------------------------------------------------------------------
 
-    def _forward(self, batch: Dict) -> tuple[Optional[torch.Tensor], Optional[torch.Tensor]]:
+    def _forward(
+        self, batch: Dict
+    ) -> tuple[Optional[torch.Tensor], Optional[torch.Tensor]]:
         """Run one forward pass.
 
         Returns:
@@ -181,7 +193,9 @@ class LoRATrainer(Trainer):
         state = self._state
 
         progress = Progress(
-            TextColumn("[bold blue]Epoch {task.fields[epoch]}/{task.fields[total_epochs]}"),
+            TextColumn(
+                "[bold blue]Epoch {task.fields[epoch]}/{task.fields[total_epochs]}"
+            ),
             BarColumn(),
             MofNCompleteColumn(),
             TimeElapsedColumn(),
@@ -337,7 +351,9 @@ class LoRATrainer(Trainer):
                 self._early_stopping_patience is not None
                 and state.patience_counter >= self._early_stopping_patience
             ):
-                _reason = "validation loss" if val_loader is not None else "training loss"
+                _reason = (
+                    "validation loss" if val_loader is not None else "training loss"
+                )
                 self._logger.display_info(
                     f"Early stopping triggered. No improvement in {_reason} "
                     f"for {self._early_stopping_patience} epochs.",

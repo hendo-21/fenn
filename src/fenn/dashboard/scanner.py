@@ -5,7 +5,6 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional
 from xml.etree import ElementTree as ET
 
-
 # Default directories to scan (resolved at runtime)
 _DEFAULT_DIRS = [
     "./logger",
@@ -217,11 +216,17 @@ class FennScanner:
             "active_project": project_name,
         }
 
-    def get_session(self, project_name: str, session_id: str) -> Optional[Dict[str, Any]]:
+    def get_session(
+        self, project_name: str, session_id: str
+    ) -> Optional[Dict[str, Any]]:
         """Return full data for a single session."""
         for path in self.find_fn_files():
             parsed = self.parse_fn_file(path)
-            if parsed and parsed["project"] == project_name and parsed["session_id"] == session_id:
+            if (
+                parsed
+                and parsed["project"] == project_name
+                and parsed["session_id"] == session_id
+            ):
                 overview = self.get_overview()
                 return {
                     **parsed,
