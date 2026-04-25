@@ -13,9 +13,10 @@ from sklearn.metrics import (  # noqa: F401
 )
 from torch.utils.data import DataLoader
 
+from fenn.core import Exporter
 from fenn.logging import Logger
 from fenn.nn.utils import Checkpoint, ModelPrettyPrinter, TrainingState
-from fenn.core import Exporter
+
 
 class Trainer(ABC):
     """The base Trainer abstract class for classification and regression tasks.
@@ -247,7 +248,7 @@ class Trainer(ABC):
         new_state = self._checkpoint.load_best()
         self._replace_state(new_state)
 
-    def save_model(self, model_name : str = "model.pth"):
+    def save_model(self, model_name: str = "model.pth"):
         torch.save(self._model.state_dict(), (self._exporter.export_dir / model_name))
 
     @abstractmethod

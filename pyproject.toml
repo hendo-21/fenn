@@ -39,7 +39,8 @@ dependencies = [
   "requests>=2.32.5",
   "resend>=2.0.0",
   "rich~=13.0.0",
-  "flask~=3.0.2"
+  "flask~=3.0.2",
+  "python-dotenv>=1.2.2",
 ]
 
 requires-python = ">=3.11"

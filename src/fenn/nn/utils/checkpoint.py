@@ -133,7 +133,9 @@ class Checkpoint:
         )
         return state
 
-    def load_at_epoch(self, epoch: int, device: Optional[torch.device] = None) -> TrainingState:
+    def load_at_epoch(
+        self, epoch: int, device: Optional[torch.device] = None
+    ) -> TrainingState:
         """Load the checkpoint at the given epoch.
 
         Args:

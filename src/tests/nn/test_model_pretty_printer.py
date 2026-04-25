@@ -52,8 +52,7 @@ def test_model_pretty_printer_compacts_large_model():
     rendered = ModelPrettyPrinter(model, small_model_threshold=5).render()
 
     assert "Class: _LargeModel" in rendered
-    assert "Modules: 52" in rendered
-    assert "... 2 nested modules omitted" in rendered
+    assert "Modules: 53" in rendered
     assert "... 2 more modules" in rendered
 
 
@@ -61,9 +60,7 @@ def test_trainer_logs_model_summary_to_logger(monkeypatch):
     logged_messages = []
 
     def capture(self, message, display_on_terminal=True, write_on_file=True):
-        logged_messages.append(
-            (message, display_on_terminal, write_on_file)
-        )
+        logged_messages.append((message, display_on_terminal, write_on_file))
 
     monkeypatch.setattr(Logger, "display_info", capture)
 

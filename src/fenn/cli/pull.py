@@ -182,6 +182,7 @@ def _download_template(template_name: str, target_dir: Path, force: bool) -> Non
                         dest_path.write_bytes(source.read())
         finally:
             # Clean up temporary file
+            tmp_file.close()
             os.unlink(tmp_file.name)
 
 

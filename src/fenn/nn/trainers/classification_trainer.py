@@ -27,17 +27,17 @@ from .trainer import Trainer
 
 class ClassificationTrainer(Trainer):
     """A trainer for classification tasks with PyTorch models.
-    
+
     Supports binary, multi-class, and multi-label classification by adapting
     the loss computation and prediction logic based on the task type. Handles
     both single-label (``num_classes == 2`` → binary, ``> 2`` → multiclass) and
     multi-label (``multi_label=True``) scenarios.
-    
+
     The automatic task type detection configures:
     - Binary: sigmoid activation, BCE loss, threshold at 0.5
     - Multiclass: softmax activation, cross-entropy loss
     - Multi-label: sigmoid activation, binary cross-entropy per label
-    
+
     Args:
         model: The neural network model, expected to output logits for
             the classification task.
@@ -52,7 +52,7 @@ class ClassificationTrainer(Trainer):
             improvement in validation/training loss. ``None`` disables.
         checkpoint_config: Optional :class:`~fenn.nn.utils.Checkpoint` for
             saving training state to disk.
-    
+
     Note:
         For binary classification (``num_classes == 2``, ``multi_label=False``),
         labels should be ``[0, 1]`` shaped tensors. For multiclass, labels should
