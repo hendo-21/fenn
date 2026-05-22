@@ -1,5 +1,6 @@
 from fenn.agents import Flow
 from fenn.agents.node import ThinkNode, ActNode, ObserveNode
+from fenn.agents.tools import get_tool_schema
 import yaml
 
 class Agent:
@@ -27,6 +28,7 @@ class Agent:
                 {"role": "system", "content": self.config["agent"]["system_prompt"]},
                 {"role": "user",   "content": user_input}
             ],
+            "tools": get_tool_schema(),
             "iterations": 0,
             "max_iterations": self.config["agent"]["max_iterations"],
             "last_thought": None,

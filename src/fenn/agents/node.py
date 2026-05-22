@@ -1,5 +1,5 @@
 from fenn.agents import Node
-from fenn.agents.tools import TOOLS
+from fenn.agents.tools import execute_tool
 
 class ThinkNode(Node):
     def prep(self, shared):
@@ -22,13 +22,20 @@ class ActNode(Node):
         return shared["last_thought"]
     
     def exec(self, thought):
-        line = [l for l in thought.split("\n") if l.startswith("Action:")][0]
-        tool_call = line.replace("Action:", "").strip()
+        if "Action:" in thought:
+            line = [l for l in thought.split("\n") if l.startswith("Action:")][0]
+            tool_call = line.replace("Action:", "").strip()
+        else:
+            tool_call = thought.strip()
 
         tool_name = tool_call.split("(")[0]
-        tool_arg  = tool_call.split("(")[1].rstrip(")")
+        args_str = tool_call.split("(")[1].rstrip(")")
+        tool_args = [arg.strip() for arg in args_str.split(",")]
 
-        result = TOOLS[tool_name](tool_arg)
+        try:
+            result = execute_tool(tool_name, *tool_args)
+        except Exception as e:
+            result = f"Error: {e}"
         return result
     
     def post(self, shared, prep_res, exec_res):
