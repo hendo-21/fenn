@@ -56,6 +56,41 @@ class TestPullCommand:
         assert (tmp_path / ".gitignore").exists()
         assert (tmp_path / "main.py").read_text() == "print('hello')"
 
+    def test_pull_creates_target_dir_when_missing(self, tmp_path, requests_mock):
+        """Test that fenn pull creates target directory when it doesn't already exist."""
+        args = Mock()
+        args.template = "base"
+        args.path = str(tmp_path / "new_dir")
+        args.force = False
+
+        # Mock GitHub API response for template existence check
+        requests_mock.get(
+            "https://api.github.com/repos/pyfenn/templates/contents/base",
+            status_code=200,
+            json={"name": "base", "type": "dir"},
+        )
+
+        # Create a mock zip file content
+        with tempfile.NamedTemporaryFile(suffix=".zip", delete=False) as tmp_zip:
+            with zipfile.ZipFile(tmp_zip.name, "w") as zf:
+                zf.writestr("templates-main/base/main.py", "print('hello')")
+
+            # Mock archive download
+            with open(tmp_zip.name, "rb") as f:
+                zip_content = f.read()
+
+            requests_mock.get(
+                "https://github.com/pyfenn/templates/archive/refs/heads/main.zip",
+                status_code=200,
+                content=zip_content,
+            )
+
+            execute(args)
+
+        # Verify dir was created and file was extracted
+        assert (tmp_path / "new_dir").exists()
+        assert (tmp_path / "new_dir" / "main.py").exists() 
+    
     def test_pull_template_not_found(self, requests_mock, capsys, tmp_path):
         """Test pull with non-existent template."""
         args = Mock()
