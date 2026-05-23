@@ -13,7 +13,7 @@ from sklearn.metrics import (  # noqa: F401
 )
 from torch.utils.data import DataLoader
 
-from fenn.core import Exporter
+from fenn.export import Exporter
 from fenn.logging import Logger
 from fenn.nn.utils import Checkpoint, ModelPrettyPrinter, TrainingState
 
