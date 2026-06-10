@@ -20,6 +20,8 @@ from flask import (
 )
 from flask_wtf.csrf import CSRFError, CSRFProtect
 
+from fenn.utils.logging import logger
+
 try:
     from fenn.dashboard import auth as dashboard_auth
     from fenn.dashboard import token_store
@@ -340,7 +342,7 @@ def run(
         scanner.add_dirs(log_dirs)
     logging.getLogger("werkzeug").setLevel(logging.ERROR)
     app.logger.setLevel(logging.ERROR)
-    print(f"Fenn dashboard started at http://{host}:{port}")
+    logger.info(f"Fenn dashboard started at http://{host}:{port}")
     from werkzeug.serving import make_server
 
     make_server(host, port, app).serve_forever()

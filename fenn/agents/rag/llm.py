@@ -1,6 +1,8 @@
 import os
 import time
 
+from fenn.utils.logging import logger
+
 # ── LLM Providers ─────────────────────────────────────────────────────────────
 #
 # All providers use an OpenAI-compatible chat completions API.
@@ -146,7 +148,7 @@ def ask(
             except RateLimitError:
                 if attempt < retries - 1:
                     wait = 5 * (attempt + 1)
-                    print(
+                    logger.info(
                         f"[cofone] rate limit hit, retrying in {wait}s... ({attempt + 1}/{retries})"
                     )
                     time.sleep(wait)

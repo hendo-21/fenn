@@ -17,6 +17,7 @@ from fenn.remote.exceptions import (
     RemoteError,
     WorkspaceTooLargeError,
 )
+from fenn.utils.logging import logger
 
 DEFAULT_SCRIPT = "main.py"
 TERMINAL_STATUSES = {"succeeded", "failed", "cancelled"}
@@ -251,7 +252,7 @@ def _render_log(data) -> None:
         line = str(data)
     # Logs from the remote already carry their own colorization (the user's
     # script ran with the same fenn logger). Pass through as-is.
-    print(line)
+    logger.info(line)
 
 
 def _coerce_status(data) -> str:
