@@ -15,8 +15,8 @@ from rich.progress import (
 from sklearn.metrics import accuracy_score
 from torch.utils.data import DataLoader
 
-from fenn.logging import Logger
 from fenn.nn.utils import Checkpoint
+from fenn.utils.logging import logger
 
 from .trainer import Trainer
 
@@ -135,11 +135,10 @@ class LoRATrainer(Trainer):
             checkpoint_config=checkpoint_config,
         )
 
-        self._logger = Logger()
         self._task_type = task_type_upper
         self._is_generative = task_type_upper in _GENERATIVE_TASK_TYPES
 
-        self._logger.display_info(
+        logger.info(
             f"LoRA applied — task: {task_type_upper} | r={r} | alpha={lora_alpha} | dropout={lora_dropout}"
         )
 
@@ -256,9 +255,8 @@ class LoRATrainer(Trainer):
                     f"[bold blue]Epoch {epoch}/{epochs}[/bold blue] "
                     f"Train Loss: {state.train_loss:.4f}"
                 )
-                Logger().display_info(
-                    f"Epoch {epoch}/{epochs} - Train Loss: {state.train_loss:.4f}",
-                    display_on_terminal=False,
+                logger.info(
+                    f"Epoch {epoch}/{epochs} - Train Loss: {state.train_loss:.4f}"
                 )
 
                 if state.train_loss < state.best_train_loss:
@@ -304,20 +302,18 @@ class LoRATrainer(Trainer):
                         f"Train Loss: {state.train_loss:.4f} | "
                         f"Val Loss: {state.val_loss:.4f} | Val Acc: {val_acc:.4f}"
                     )
-                    Logger().display_info(
+                    logger.info(
                         f"Epoch {epoch}/{epochs} - Train Loss: {state.train_loss:.4f} | "
                         f"Val Loss: {state.val_loss:.4f} | Val Acc: {val_acc:.4f}",
-                        display_on_terminal=False,
                     )
                 else:
                     progress.console.print(
                         f"[bold blue]Epoch {epoch}/{epochs}[/bold blue] "
                         f"Train Loss: {state.train_loss:.4f} | Val Loss: {state.val_loss:.4f}"
                     )
-                    Logger().display_info(
+                    logger.info(
                         f"Epoch {epoch}/{epochs} - Train Loss: {state.train_loss:.4f} | "
                         f"Val Loss: {state.val_loss:.4f}",
-                        display_on_terminal=False,
                     )
 
                 if state.val_loss < state.best_val_loss:
@@ -354,10 +350,9 @@ class LoRATrainer(Trainer):
                 _reason = (
                     "validation loss" if val_loader is not None else "training loss"
                 )
-                self._logger.display_info(
+                logger.info(
                     f"Early stopping triggered. No improvement in {_reason} "
                     f"for {self._early_stopping_patience} epochs.",
-                    display_on_terminal=False,
                 )
                 break
 

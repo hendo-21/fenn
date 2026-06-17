@@ -5,7 +5,6 @@ from colorama import Fore, Style
 
 from fenn.args import Parser
 from fenn.export.exporter import Exporter
-from fenn.logging import Logger
 from fenn.secrets.keystore import KeyStore
 from fenn.utils import generate_session_id
 from fenn.utils.logging import logger
@@ -33,7 +32,6 @@ class Fenn:
 
         self._parser: Parser = Parser()
         self._keystore: KeyStore = KeyStore()
-        self._logger: Logger = Logger()
         self._exporter: Exporter = Exporter()
 
         # DISCLAIMER:

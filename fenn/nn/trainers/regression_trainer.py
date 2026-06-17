@@ -14,8 +14,8 @@ from rich.progress import (
 from sklearn.metrics import r2_score
 from torch.utils.data import DataLoader
 
-from fenn.logging import Logger
 from fenn.nn.utils import Checkpoint
+from fenn.utils.logging import logger
 
 from .trainer import Trainer
 
@@ -71,7 +71,6 @@ class RegressionTrainer(Trainer):
             checkpoint_config=checkpoint_config,
         )
 
-        self._logger = Logger()
         self._return_model = return_model.lower()
 
         if self._return_model not in {"last", "best"}:
@@ -168,9 +167,8 @@ class RegressionTrainer(Trainer):
                 progress.console.print(
                     f"[bold blue]Epoch {epoch}/{epochs}[/bold blue] Train Loss: {state.train_loss:.4f}"
                 )
-                Logger().display_info(
+                logger.info(
                     f"Epoch {epoch}/{epochs} - Train Loss: {state.train_loss:.4f}",
-                    display_on_terminal=False,
                 )
 
                 if state.train_loss < state.best_train_loss:
@@ -214,9 +212,8 @@ class RegressionTrainer(Trainer):
                     progress.console.print(
                         f"[bold blue]Epoch {epoch}/{epochs}[/bold blue] Train Loss: {state.train_loss:.4f} | Val Loss: {val_mean_loss:.4f} | Val R2: {val_r2:.4f}"
                     )
-                    Logger().display_info(
+                    logger.info(
                         f"Epoch {epoch}/{epochs} - Train Loss: {state.train_loss:.4f} | Val Loss: {val_mean_loss:.4f} | Val R2: {val_r2:.4f}",
-                        display_on_terminal=False,
                     )
 
                 state.val_loss = val_total_loss / val_n_batches
@@ -263,7 +260,7 @@ class RegressionTrainer(Trainer):
                     _reason = "training loss"
                 else:
                     _reason = "validation loss"
-                self._logger.display_info(
+                logger.info(
                     f"Early stopping triggered. No improvement in {_reason} for {self._early_stopping_patience} epochs."
                 )
                 break

@@ -19,8 +19,8 @@ from sklearn.metrics import (  # noqa: F401
 )
 from torch.utils.data import DataLoader
 
-from fenn.logging import Logger
 from fenn.nn.utils import Checkpoint
+from fenn.utils.logging import logger
 
 from .trainer import Trainer
 
@@ -92,7 +92,6 @@ class ClassificationTrainer(Trainer):
             checkpoint_config=checkpoint_config,
         )
 
-        self._logger = Logger()
         self._num_classes = num_classes
         self.multi_label = multi_label
 
@@ -109,15 +108,11 @@ class ClassificationTrainer(Trainer):
             self._task_type = "multiclass"
 
         if multi_label:
-            self._logger.display_info(
-                f"Multi-label classification ({num_classes} labels) mode"
-            )
+            logger.info(f"Multi-label classification ({num_classes} labels) mode")
         elif num_classes == 2:
-            self._logger.display_info("Binary classification mode detected.")
+            logger.info("Binary classification mode detected.")
         else:
-            self._logger.display_info(
-                f"Multi-class classification ({num_classes} classes)"
-            )
+            logger.info(f"Multi-class classification ({num_classes} classes)")
 
     def fit(
         self,
@@ -213,9 +208,8 @@ class ClassificationTrainer(Trainer):
                 progress.console.print(
                     f"[bold blue]Epoch {epoch}/{epochs}[/bold blue] Train Loss: {state.train_loss:.4f}"
                 )
-                Logger().display_info(
-                    f"Epoch {epoch}/{epochs} - Train Loss: {state.train_loss:.4f}",
-                    display_on_terminal=False,
+                logger.info(
+                    f"Epoch {epoch}/{epochs} - Train Loss: {state.train_loss:.4f}"
                 )
 
                 if state.train_loss < state.best_train_loss:
@@ -263,9 +257,8 @@ class ClassificationTrainer(Trainer):
                     progress.console.print(
                         f"[bold blue]Epoch {epoch}/{epochs}[/bold blue] Train Loss: {state.train_loss:.4f} | Val Loss: {val_mean_loss:.4f} | Val Acc: {val_acc:.4f}"
                     )
-                    Logger().display_info(
-                        f"Epoch {epoch}/{epochs} - Train Loss: {state.train_loss:.4f} | Val Loss: {val_mean_loss:.4f} | Val Acc: {val_acc:.4f}",
-                        display_on_terminal=False,
+                    logger.info(
+                        f"Epoch {epoch}/{epochs} - Train Loss: {state.train_loss:.4f} | Val Loss: {val_mean_loss:.4f} | Val Acc: {val_acc:.4f}"
                     )
 
                 state.val_loss = val_total_loss / val_n_batches
@@ -307,9 +300,8 @@ class ClassificationTrainer(Trainer):
                     _reason = "training loss"
                 else:
                     _reason = "validation loss"
-                self._logger.display_info(
-                    f"Early stopping triggered.  No improvement in {_reason} for {self._early_stopping_patience} epochs.",
-                    display_on_terminal=False,
+                logger.info(
+                    f"Early stopping triggered.  No improvement in {_reason} for {self._early_stopping_patience} epochs."
                 )
 
                 break

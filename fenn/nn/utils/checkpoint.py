@@ -3,8 +3,8 @@ from typing import List, Optional, Union
 
 import torch
 
-from fenn.logging import Logger
 from fenn.nn.utils.state import TrainingState
+from fenn.utils.logging import logger
 
 
 class Checkpoint:
@@ -45,8 +45,6 @@ class Checkpoint:
             save_best: Whether to checkpoint the best model (based on validation or training loss).
         """
 
-        self._logger = Logger()
-
         self.name = name
         self.dir = Path(dir)
         self.epochs = epochs
@@ -57,19 +55,19 @@ class Checkpoint:
         self.dir.mkdir(parents=True, exist_ok=True)
 
         if self.epochs is None and not self.save_best:
-            self._logger.system_warning(
+            logger.warning(
                 "Checkpoint configuration is passed, but both `epochs` and `save_best` are unset.\n"
                 "Models will not be checkpointed."
             )
             return
 
         if self.epochs is not None:
-            self._logger.display_info(
+            logger.info(
                 f"Checkpointing enabled. Checkpoints will be saved to {self.dir} every {self.epochs} epochs."
             )
 
         if self.save_best:
-            self._logger.display_info(
+            logger.info(
                 f"Best model checkpointing enabled. Best model will be saved to {self.dir}."
             )
 
@@ -89,18 +87,16 @@ class Checkpoint:
             filename = f"{self.name}_epoch_{epoch}.pt"
             filepath = self.dir / filename
             torch.save(state.to_dict(), filepath)
-            self._logger.display_info(
+            logger.info(
                 f"Checkpoint saved at epoch {epoch} to {filepath}.",
-                display_on_terminal=False,
             )
 
         elif is_best and self.save_best:
             filename = f"{self.name}_best.pt"
             filepath = self.dir / filename
             torch.save(state.to_dict(), filepath)
-            self._logger.display_info(
+            logger.info(
                 f"Best model checkpoint saved to {filepath} with acc {state.acc:.4f}.",
-                display_on_terminal=False,
             )
 
     def load(
@@ -127,7 +123,7 @@ class Checkpoint:
         checkpoint = torch.load(filepath, map_location=device)
         state = TrainingState.from_dict(checkpoint)
 
-        self._logger.display_info(
+        logger.info(
             f"Checkpoint loaded from {checkpoint_path}. Resuming from "
             f"epoch {state.epoch} with training loss {state.train_loss:.4f}."
         )

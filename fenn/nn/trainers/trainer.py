@@ -14,8 +14,8 @@ from sklearn.metrics import (  # noqa: F401
 from torch.utils.data import DataLoader
 
 from fenn.export import Exporter
-from fenn.logging import Logger
 from fenn.nn.utils import Checkpoint, ModelPrettyPrinter, TrainingState
+from fenn.utils.logging import logger
 
 
 class Trainer(ABC):
@@ -54,7 +54,6 @@ class Trainer(ABC):
             checkpoint_config: The checkpoint configuration. If `None`, checkpointing is disabled.
         """
 
-        self._logger = Logger()
         self._exporter = Exporter()
 
         self._loss_fn = loss_fn
@@ -80,13 +79,13 @@ class Trainer(ABC):
         # early stopping setup
         self._early_stopping_patience = early_stopping_patience
         if self._early_stopping_patience is not None:
-            self._logger.display_info(
+            logger.info(
                 f"Early stopping enabled with patience of {self._early_stopping_patience} epochs."
             )
 
     def _log_model_summary(self) -> None:
         summary = ModelPrettyPrinter(self._model).render()
-        self._logger.display_info(summary, display_on_terminal=False)
+        logger.info(summary)
 
     def _move_to_device(self, batch: Any, device: Union[torch.device, str]) -> Any:
         """Recursively move tensor data to the specified device.
