@@ -52,7 +52,7 @@ class XmlMixin:
                 f'started="{self._started_at}">\n'
             )
 
-    def _write_to_xml(self, record: logging.LogRecord, file_path: Path) -> None:
+    def _write_entry(self, record: logging.LogRecord, file_path: Path) -> None:
         ts = datetime.fromtimestamp(record.created, tz=timezone.utc)
         clean_message = self._escape(_ansi_escape.sub("", record.getMessage()))
         with open(file_path, "a", encoding="utf-8") as f:
@@ -109,24 +109,21 @@ class FennHandler(XmlMixin, logging.Handler):
         clean_message = _ansi_escape.sub("", record.getMessage())
         match record.levelno:
             case logging.DEBUG:
-                color = "[dim][DEBUG][/dim"
+                color = "[dim][DEBUG][/dim]"
             case logging.INFO:
                 color = "[bold green][INFO][/bold green]"
             case logging.WARNING:
                 color = "[bold yellow][WARNING][/bold yellow]"
             case logging.ERROR:
                 color = "[bold red][EXCEPTION][/bold red]"
-        ts = datetime.fromtimestamp(record.created, tz=timezone.utc)
-        console.print(
-            f"[{ts.strftime('%Y-%m-%d %H:%M:%S')}] {color} | {clean_message}\n"
-        )
+        console.print(f"{color} | {clean_message}\n")
 
     def emit(
         self,
         record,
     ):
         if self._fn_xml and self._log_file:
-            self._write_to_xml(record=record, file_path=self._fn_xml)
+            self._write_entry(record=record, file_path=self._fn_xml)
             self._write_to_log(record=record)
         if not getattr(record, "skip_console", False):
             self._write_to_console(record=record)
