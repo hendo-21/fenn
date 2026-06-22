@@ -551,6 +551,18 @@ wheels = [
 ]
 
 [[package]]
+name = "faker"
+version = "40.23.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "tzdata", marker = "sys_platform == 'win32'" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/f3/d6/fc071e5754815d9058e12ab549cc88e90f8f4ecf4dc33b6b750cdf4b622d/faker-40.23.0.tar.gz", hash = "sha256:f135e563f1f95f19346bb680bc2e43570bc43b7893e566023746f51f32c69dfc", size = 1972975, upload-time = "2026-06-10T20:53:21.611Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/64/5f/824e6fb3e9d63408151dc9173994fa65bde620a67dde3a59354f5aecd497/faker-40.23.0-py3-none-any.whl", hash = "sha256:775922453e54afa42eaf60eac478fa3a969357f224d09a8022b93e3ad88f18ae", size = 2013046, upload-time = "2026-06-10T20:53:19.226Z" },
+]
+
+[[package]]
 name = "fenn"
 version = "0.2.2"
 source = { editable = "." }
@@ -577,6 +589,7 @@ ci = [
 ]
 dev = [
     { name = "colorama" },
+    { name = "faker" },
     { name = "flask" },
     { name = "flask-wtf" },
     { name = "nox" },
@@ -630,6 +643,7 @@ rag-web = [
 ]
 test = [
     { name = "colorama" },
+    { name = "faker" },
     { name = "flask" },
     { name = "flask-wtf" },
     { name = "nox" },
@@ -683,6 +697,7 @@ ci = [
 ]
 dev = [
     { name = "colorama", specifier = ">=0.4.6" },
+    { name = "faker", specifier = ">=25.0.0" },
     { name = "flask", specifier = "~=3.0.2" },
     { name = "flask-wtf", specifier = ">=1.2.0" },
     { name = "nox", specifier = "==2026.4.10" },
@@ -734,6 +749,7 @@ rag-web = [
 ]
 test = [
     { name = "colorama", specifier = ">=0.4.6" },
+    { name = "faker", specifier = ">=25.0.0" },
     { name = "flask", specifier = "~=3.0.2" },
     { name = "flask-wtf", specifier = ">=1.2.0" },
     { name = "nox", specifier = "==2026.4.10" },
