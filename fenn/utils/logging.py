@@ -211,10 +211,6 @@ class FennLogger(XmlMixin, logging.LoggerAdapter):
         console.print(table)
 
 
-def custom_print(*args, **kwargs):
-    logger.info(" ".join(str(a) for a in args))
-
-
 fenn_handler = FennHandler()
 base = logging.getLogger("__name__")
 base.addHandler(fenn_handler)
@@ -223,5 +219,10 @@ logger = FennLogger(base, fenn_handler)
 
 logger.setLevel(logging.DEBUG)
 
+
+def _custom_print(*args, **kwargs):
+    logger.info(" ".join(str(a) for a in args))
+
+
 original_print = builtins.print
-builtins.print = custom_print
+builtins.print = _custom_print
