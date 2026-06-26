@@ -2,8 +2,9 @@
 
 import os
 import time
+from datetime import datetime
 from pathlib import Path
-from typing import Any
+from typing import Any, Optional
 from xml.etree import ElementTree
 
 # Default directories to scan (resolved at runtime)
@@ -331,6 +332,8 @@ class FennScanner:
         self,
         project: str | None = None,
         status: str | None = None,
+        started_after: Optional[datetime] = None,
+        started_before: Optional[datetime] = None,
         limit: int = 20,
         offset: int = 0,
         sort: str = "-started",
@@ -340,6 +343,11 @@ class FennScanner:
         ``sort`` is a field name optionally prefixed with ``-`` for descending
         order. Valid fields: started, ended, duration_s, warning_count,
         exception_count. Status must be one of running/crashed/completed/failed.
+
+        ``started_after`` and ``started_before`` filter by parsed ``started``
+        timestamp (inclusive). Sessions with missing or invalid ``started`` values
+        are skipped when either filter is used. If ``started_after`` is later than
+        ``started_before``, an empty result is returned.
 
         Raises ``ValueError`` on invalid status or sort field; callers are
         responsible for converting these into HTTP-shaped errors.
@@ -357,6 +365,29 @@ class FennScanner:
             sessions = [s for s in sessions if s["project"] == project]
         if status:
             sessions = [s for s in sessions if s["status"] == status]
+        if started_after is not None or started_before is not None:
+            if (
+                started_after is not None
+                and started_before is not None
+                and started_after > started_before
+            ):
+                sessions = []
+            else:
+                filtered = []
+                for s in sessions:
+                    raw = s.get("started")
+                    if not raw:
+                        continue
+                    try:
+                        started = datetime.strptime(raw, "%Y-%m-%d %H:%M:%S")
+                    except (ValueError, TypeError):
+                        continue
+                    if started_after is not None and started < started_after:
+                        continue
+                    if started_before is not None and started > started_before:
+                        continue
+                    filtered.append(s)
+                sessions = filtered
 
         # Sorts None values last (ascending) / first (descending) without comparing None to
         # non-None values, but may raise TypeError if non-None values are of different types

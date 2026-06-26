@@ -3,7 +3,7 @@
 import argparse
 import logging
 import secrets
-from datetime import timedelta
+from datetime import datetime, timedelta
 from pathlib import Path
 
 from flask import (
@@ -230,8 +230,13 @@ class _ApiBadRequest(Exception):
 def api_sessions():
     """Filtered, sorted, paginated session listing.
 
-    Query params: project, status, limit (1..200, default 20), offset (>=0,
-    default 0), sort (field, optionally ``-`` prefixed for descending).
+    Query params:
+        project,
+        status,
+        limit (1..200, default 20),
+        offset (>=0, default 0),
+        sort (field, optionally ``-`` prefixed for descending),
+        started_after, started_before (timestamps formatted as ``YYYY-MM-DD HH:MM:SS``).
     """
     try:
         project_name = request.args.get("project") or None
@@ -242,10 +247,38 @@ def api_sessions():
         )
         offset = _parse_int_arg("offset", request.args.get("offset"), 0, 0, 1_000_000)
 
+        started_after = None
+        started_after_raw = request.args.get("started_after") or None
+        if started_after_raw is not None:
+            try:
+                started_after = datetime.strptime(
+                    started_after_raw, "%Y-%m-%d %H:%M:%S"
+                )
+            except ValueError:
+                raise _ApiBadRequest(
+                    "started_after must be formatted as YYYY-MM-DD HH:MM:SS",
+                    "started_after",
+                )
+
+        started_before = None
+        started_before_raw = request.args.get("started_before") or None
+        if started_before_raw is not None:
+            try:
+                started_before = datetime.strptime(
+                    started_before_raw, "%Y-%m-%d %H:%M:%S"
+                )
+            except ValueError:
+                raise _ApiBadRequest(
+                    "started_before must be formatted as YYYY-MM-DD HH:MM:SS",
+                    "started_before",
+                )
+
         try:
             result = scanner.list_sessions(
                 project=project_name,
                 status=status,
+                started_after=started_after,
+                started_before=started_before,
                 limit=limit,
                 offset=offset,
                 sort=sort,
