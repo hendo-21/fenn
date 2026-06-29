@@ -7,7 +7,7 @@ from fenn.args import Parser
 from fenn.export.exporter import Exporter
 from fenn.secrets.keystore import KeyStore
 from fenn.utils import generate_session_id
-from fenn.utils.logging import logger, original_print
+from fenn.utils.logging import logger, original_print, redirect_prints, restore_prints
 
 
 class Fenn:
@@ -105,12 +105,13 @@ class Fenn:
                 "to register your main function."
             )
 
-        Exporter().configure(self._args)
-
-        # Print parsed config (user logs)
-        self._parser.print()
-
+        redirect_prints()
         try:
+            Exporter().configure(self._args)
+
+            # Print parsed config (user logs)
+            self._parser.print()
+
             # System startup message
             logger.info(
                 f"Application starting from entrypoint: {self._entrypoint_fn.__name__}"
@@ -121,6 +122,7 @@ class Fenn:
             return result
 
         finally:
+            restore_prints()
             logger.close()
 
     def disable_disclaimer(self) -> None:
