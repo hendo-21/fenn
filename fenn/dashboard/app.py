@@ -86,12 +86,12 @@ def _try_stored_session() -> Response | None:
     response if the caller should short-circuit (e.g. redirect to connect
     when the saved token has been revoked server-side).
     """
-    stored: dict[str, Any] | None = token_store.load()
+    stored = token_store.load()
     if stored is None:
         return None
 
     try:
-        user: dict[str, Any] = dashboard_auth.validate_token(stored["token"])
+        user = dashboard_auth.validate_token(stored["token"])
     except dashboard_auth.InvalidTokenError:
         # Server explicitly rejected the saved token — drop it and force a
         # fresh paste. Flash a message so the user understands why.
@@ -118,12 +118,12 @@ def _try_stored_session() -> Response | None:
 
 @app.before_request
 def _require_login() -> Response | None:
-    endpoint: str | None = request.endpoint
+    endpoint = request.endpoint
     if endpoint in _PUBLIC_ENDPOINTS:
         return None
     if dashboard_auth.current_user() is not None:
         return None
-    response: Response | None = _try_stored_session()
+    response = _try_stored_session()
     if response is not None:
         return response
     if dashboard_auth.current_user() is not None:
@@ -180,7 +180,7 @@ def project(project_name: str) -> str:
 
 @app.route("/session/<project_name>/<session_id>", endpoint="session")
 def session_view(project_name: str, session_id: str) -> str:
-    data: dict[str, Any] | None = scanner.get_session(project_name, session_id)
+    data = scanner.get_session(project_name, session_id)
     if data is None:
         abort(404)
     return render_template("session.html", **data)
@@ -193,7 +193,7 @@ def api_overview() -> Response:
 
 @app.route("/api/session/<project_name>/<session_id>")
 def api_session(project_name: str, session_id: str) -> Response:
-    data: dict[str, Any] | None = scanner.get_session(project_name, session_id)
+    data = scanner.get_session(project_name, session_id)
     if data is None:
         abort(404)
     data.pop("projects", None)
@@ -210,7 +210,7 @@ def _api_error(
     code: str, message: str, param: str | None = None
 ) -> tuple[Response, int]:
     """Standard 400 envelope so clients can branch on `error.code`."""
-    body: dict[str, Any] = {"error": {"code": code, "message": message}}
+    body = {"error": {"code": code, "message": message}}
     if param is not None:
         body["error"]["param"] = param
     return jsonify(body), 400
@@ -228,7 +228,7 @@ def _parse_int_arg(
     if raw is None or raw == "":
         return default
     try:
-        v: int = int(raw)
+        v = int(raw)
     except ValueError:
         raise _ApiBadRequest(f"{name} must be an integer", name)
     if v < min_v or v > max_v:
@@ -244,18 +244,18 @@ def api_sessions() -> Response:
     default 0), sort (field, optionally ``-`` prefixed for descending).
     """
     try:
-        project_name: str | None = request.args.get("project") or None
-        status: str | None = request.args.get("status") or None
-        sort: str = request.args.get("sort") or "-started"
-        limit: int = _parse_int_arg(
+        project_name = request.args.get("project") or None
+        status = request.args.get("status") or None
+        sort = request.args.get("sort") or "-started"
+        limit = _parse_int_arg(
             "limit", request.args.get("limit"), _DEFAULT_LIMIT, 1, _MAX_LIMIT
         )
-        offset: int = _parse_int_arg(
+        offset = _parse_int_arg(
             "offset", request.args.get("offset"), 0, 0, 1_000_000
         )
 
         try:
-            result: dict[str, Any] = scanner.list_sessions(
+            result = scanner.list_sessions(
                 project=project_name,
                 status=status,
                 limit=limit,
@@ -265,8 +265,8 @@ def api_sessions() -> Response:
         except ValueError as e:
             # Pick the parameter name from the message so the envelope is
             # consistent with the int-parsing errors above.
-            msg: str = str(e)
-            param: str = "status" if msg.startswith("status") else "sort"
+            msg = str(e)
+            param = "status" if msg.startswith("status") else "sort"
             return _api_error("invalid_param", msg, param)
 
         return jsonify(result)
@@ -298,16 +298,16 @@ def connect() -> Response:
 
     # One-shot info message set by the auth gate (e.g. "your saved token
     # expired"). Pop so it doesn't persist past this render.
-    info_message: str | None = session.pop("pending_info", None)
+    info_message = session.pop("pending_info", None)
 
     if request.method == "GET":
         return render_template(  # type: ignore[return-value]
             "connect.html", error_message=None, info_message=info_message
         )
 
-    token: str = request.form.get("token", "")
+    token = request.form.get("token", "")
     try:
-        user: dict[str, Any] = dashboard_auth.validate_token(token)
+        user = dashboard_auth.validate_token(token)
     except dashboard_auth.InvalidTokenError:
         return render_template(  # type: ignore[return-value]
             "connect.html",
@@ -354,7 +354,7 @@ def run(
     """Configure and start the dashboard server."""
     if log_dirs:
         scanner.add_dirs(log_dirs)
-    log_level: int = logging.DEBUG if debug else logging.INFO
+    log_level = logging.DEBUG if debug else logging.INFO
     app.logger.setLevel(log_level)
     logger.setLevel(log_level)
     logger.info(f"Fenn dashboard started at http://{host}:{port}")
@@ -369,7 +369,7 @@ def run(
 
 
 def main() -> None:
-    parser: argparse.ArgumentParser = argparse.ArgumentParser(
+    parser = argparse.ArgumentParser(
         prog="fenn-dashboard",
         description="Fenn Dashboard — browse fnxml log files in your browser",
     )
@@ -382,7 +382,7 @@ def main() -> None:
     parser.add_argument("--port", type=int, default=5000)
     parser.add_argument("--host", default="127.0.0.1")
     parser.add_argument("--debug", action="store_true")
-    args: argparse.Namespace = parser.parse_args()
+    args = parser.parse_args()
     run(host=args.host, port=args.port, debug=args.debug, log_dirs=args.log_dir)
 
 
