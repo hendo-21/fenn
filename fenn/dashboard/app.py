@@ -37,7 +37,7 @@ except ImportError:  # standalone: python app.py
 
 _HERE = Path(__file__).parent
 
-app: Flask = Flask(
+app = Flask(
     __name__,
     template_folder=str(_HERE / "templates"),
     static_folder=str(_HERE / "static"),
@@ -57,9 +57,9 @@ app.config.update(
 
 # CSRF on /connect and /logout. Even though we listen on 127.0.0.1, any tab in
 # the user's browser could POST cross-origin without it.
-csrf: CSRFProtect = CSRFProtect(app)
+csrf = CSRFProtect(app)
 
-scanner: FennScanner = FennScanner()
+scanner = FennScanner()
 
 
 @app.context_processor
@@ -68,12 +68,12 @@ def _inject_current_user() -> dict[str, Any]:
 
 
 # Endpoints that must remain reachable without a session.
-_PUBLIC_ENDPOINTS: frozenset[str] = frozenset({"connect", "logout", "static"})
+_PUBLIC_ENDPOINTS = frozenset({"connect", "logout", "static"})
 
-_STORED_TOKEN_EXPIRED_MESSAGE: str = (
+_STORED_TOKEN_EXPIRED_MESSAGE = (
     "Your saved dashboard token expired or was revoked. Paste a fresh one to continue."
 )
-_STORED_TOKEN_OFFLINE_MESSAGE: str = (
+_STORED_TOKEN_OFFLINE_MESSAGE = (
     "Could not reach https://pyfenn.com to verify your saved token. "
     "Using cached identity — the dashboard will revalidate next launch."
 )
@@ -202,8 +202,8 @@ def api_session(project_name: str, session_id: str) -> Response:
 
 # Pagination / filtering limits. 200 is large enough for any plausible UI
 # without letting a client ask for "everything" by accident.
-_MAX_LIMIT: int = 200
-_DEFAULT_LIMIT: int = 20
+_MAX_LIMIT = 200
+_DEFAULT_LIMIT = 20
 
 
 def _api_error(
@@ -218,8 +218,8 @@ def _api_error(
 
 class _ApiBadRequest(Exception):
     def __init__(self, message: str, param: str | None = None) -> None:
-        self.message: str = message
-        self.param: str | None = param
+        self.message = message
+        self.param = param
 
 
 def _parse_int_arg(
@@ -250,9 +250,7 @@ def api_sessions() -> Response:
         limit = _parse_int_arg(
             "limit", request.args.get("limit"), _DEFAULT_LIMIT, 1, _MAX_LIMIT
         )
-        offset = _parse_int_arg(
-            "offset", request.args.get("offset"), 0, 0, 1_000_000
-        )
+        offset = _parse_int_arg("offset", request.args.get("offset"), 0, 0, 1_000_000)
 
         try:
             result = scanner.list_sessions(
@@ -283,11 +281,11 @@ def not_found(_e: HTTPException) -> tuple[str, int]:
 # Auth routes
 # --------------------------------------------------------------------------- #
 
-_NETWORK_ERROR_MESSAGE: str = (
+_NETWORK_ERROR_MESSAGE = (
     "Could not reach https://pyfenn.com. Verify your internet connection "
     "or open an issue at https://github.com/pyfenn/fenn/issues."
 )
-_INVALID_TOKEN_MESSAGE: str = "Invalid or expired token."
+_INVALID_TOKEN_MESSAGE = "Invalid or expired token."
 
 
 @app.route("/connect", methods=["GET", "POST"])
