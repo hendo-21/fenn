@@ -26,6 +26,27 @@ from flask import (
 from flask_wtf.csrf import CSRFError, CSRFProtect
 from werkzeug.exceptions import HTTPException
 
+from fenn.cli.list import get_available_templates
+from fenn.cli.pull import pull_template
+from fenn.dashboard.responses import (
+    error_response,
+    filesystem_error,
+    invalid_template,
+    target_not_empty,
+    template_download_unavailable,
+    template_list_unavailable,
+    template_not_found,
+)
+from fenn.dashboard.validation import (
+    check_body,
+    check_non_empty_string,
+    check_type,
+)
+from fenn.exceptions import (
+    NetworkError,
+    TemplateError,
+    TemplateNotFoundError,
+)
 from fenn.logging import logger
 
 try:
@@ -93,13 +114,12 @@ _DEFAULT_LIMIT = 20
 
 
 def _api_error(
-    code: str, message: str, param: str | None = None
+    code: str,
+    message: str,
+    param: str | None = None,
 ) -> tuple[Response, int]:
-    """Standard 400 envelope so clients can branch on `error.code`."""
-    body = {"error": {"code": code, "message": message}}
-    if param is not None:
-        body["error"]["param"] = param
-    return jsonify(body), 400
+    """Return a standard 400 dashboard API error."""
+    return error_response(code, message, param), 400
 
 
 def _try_stored_session() -> werkzeug.wrappers.response.Response | None:
@@ -246,6 +266,92 @@ def api_session(project_name: str, session_id: str) -> Response:
         abort(404)
     data.pop("projects", None)  # ty: ignore[call-non-callable]
     return jsonify(data)
+
+
+@app.route("/api/templates")
+def api_templates() -> tuple[Response, int] | Response:
+    """Return the templates available from the official template repository."""
+    try:
+        templates = get_available_templates()
+    except NetworkError as exc:
+        return template_list_unavailable(exc), 502
+
+    return jsonify(
+        {
+            "templates": templates,
+            "total": len(templates),
+        }
+    )
+
+
+@app.route("/api/templates/pull", methods=["POST"])
+def api_template_pull() -> tuple[Response, int] | Response:
+    """Download a selected template into a local directory."""
+    payload = request.get_json(silent=True)
+
+    if (error := check_body(payload, dict)) is not None:
+        return error
+
+    assert isinstance(payload, dict)
+
+    template_name = payload.get("template")
+    target_path = payload.get("path")
+    force = payload.get("force", False)
+
+    if (
+        error := check_non_empty_string(
+            template_name,
+            "template",
+        )
+    ) is not None:
+        return error
+
+    if (
+        error := check_non_empty_string(
+            target_path,
+            "path",
+        )
+    ) is not None:
+        return error
+
+    if (
+        error := check_type(
+            force,
+            bool,
+            "force",
+            expected_name="boolean",
+        )
+    ) is not None:
+        return error
+
+    assert isinstance(template_name, str)
+    assert isinstance(target_path, str)
+    assert isinstance(force, bool)
+
+    try:
+        resolved_path = pull_template(
+            template_name=template_name,
+            target_dir=Path(target_path),
+            force=force,
+        )
+    except FileExistsError as exc:
+        return target_not_empty(exc), 409
+    except TemplateNotFoundError as exc:
+        return template_not_found(exc), 404
+    except NetworkError as exc:
+        return template_download_unavailable(exc), 502
+    except TemplateError as exc:
+        return invalid_template(exc), 400
+    except OSError as exc:
+        return filesystem_error(exc), 500
+
+    return jsonify(
+        {
+            "template": template_name.strip(),
+            "path": str(resolved_path),
+            "downloaded": True,
+        }
+    )
 
 
 @app.route("/api/session/<project_name>/<session_id>/rename", methods=["POST"])
