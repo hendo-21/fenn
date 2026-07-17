@@ -3,6 +3,8 @@
 import logging
 from unittest.mock import Mock
 
+import pytest
+
 from fenn.cli import build_parser, profile
 
 
@@ -22,27 +24,28 @@ def test_profile_parser_accepts_limit() -> None:
     assert args.limit == 10
 
 
+@pytest.mark.parametrize("template_name", ["default", "nested/default"])
 def test_profile_execute_generates_profile_and_report(
-    tmp_path, monkeypatch, caplog
+    tmp_path, monkeypatch, caplog, template_name
 ) -> None:
     """Execute profile and verify output files are created and reported."""
-    monkeypatch.setattr(profile, "ROOT", tmp_path)
+    monkeypatch.chdir(tmp_path)
 
-    template_dir = tmp_path / "default"
-    template_dir.mkdir()
+    template_dir = tmp_path / template_name
+    template_dir.mkdir(parents=True)
     (template_dir / "main.py").write_text(
         "print('hello')\n",
         encoding="utf-8",
     )
 
     args = Mock()
-    args.template = "default"
+    args.template = template_name
     args.limit = 5
 
     caplog.set_level(logging.INFO)
     profile.execute(args)
 
-    output_dir = tmp_path / "profiling_results" / "default"
+    output_dir = tmp_path / "profiling_results" / template_name
     profile_file = output_dir / "cprofile.prof"
     report_file = output_dir / "cprofile.txt"
 
@@ -54,3 +57,19 @@ def test_profile_execute_generates_profile_and_report(
     assert "Report:" in log_output
     assert str(profile_file) in log_output
     assert str(report_file) in log_output
+
+
+def test_profile_execute_raises_exit_code(tmp_path, monkeypatch):
+    """Verify system exit is raised when profile execute is called on
+    template dir missing main.py."""
+    monkeypatch.chdir(tmp_path)
+    template_dir = tmp_path / "missing_main"
+    template_dir.mkdir()
+
+    args = Mock()
+    args.template = "missing_main"
+
+    with pytest.raises(SystemExit) as exc_info:
+        profile.execute(args)
+
+    assert exc_info.value.code == 1
